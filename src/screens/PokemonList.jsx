@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     margin: 8,
     backgroundColor: '#fff',
     flexDirection: 'row',
-    alignItems: 'center', 
+    alignItems: 'center',
   },
   image: {
     width: 50,
@@ -54,22 +54,29 @@ const PokemonItem = ({ pokemon, onPress }) => {
   );
 };
 
-const PokemonList = () => {
+const PokemonList = ({ navigation }) => {
   const [pokemonData, setPokemonData] = useState([]);
   const [selectedPokemon, setSelectedPokemon] = useState(null);
+  const [totalPokemons, setTotalPokemons] = useState(0)
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(false)
 
   const fetchPokemonData = async () => {
     try {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=10`);
+      setTotalPokemons(0)
+      setLoading(true);
+      setPokemonData([])
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=10&offset=${(page - 1) * 10}`);
       const data = await response.json();
+      setTotalPokemons(data.count);
+      setLoading(false)
 
-      
       const pokemonsWithImages = await Promise.all(
         data.results.map(async (pokemon) => {
           const detailsResponse = await fetch(pokemon.url);
           const detailsData = await detailsResponse.json();
           const imageUrl = detailsData.sprites.front_default;
-          const types = detailsData.types.map((type) => type.type.name); 
+          const types = detailsData.types.map((type) => type.type.name);
           return { ...pokemon, imageUrl, types };
         })
       );
@@ -84,8 +91,15 @@ const PokemonList = () => {
     fetchPokemonData();
   }, []);
 
+  useEffect(() => {
+    fetchPokemonData();
+  }, [page]);
+
   const handlePokemonPress = (pokemon) => {
-    setSelectedPokemon(pokemon);
+    // setSelectedPokemon(pokemon);
+    navigation.navigate("DetalhePokemon", {
+      pokemon
+    });
   };
 
   const handleCloseModal = () => {
@@ -94,12 +108,33 @@ const PokemonList = () => {
 
   return (
     <View>
+
+      <TouchableOpacity onPress={() => navigation.navigate("Mostre seu talento no desenho")} style={{ height: 50, minWidth: 50, borderRadius: 10, marginRight: 20, padding: 10, borderTopColor: "green", borderLeftColor: "yellow", borderBottomColor: "red", borderRightColor: "blue", borderWidth: 5, margin: 40 }} >
+        <Text style={{ color: "#444444", fontWeight: "bold", fontSize: 20 }} >Quadro de desenhos</Text>
+      </TouchableOpacity>
+
+      <FlatList
+        horizontal
+        style={{ padding: 10, height: 110 }}
+        data={Array(Math.round(totalPokemons / 10))}
+        renderItem={({ item: rowData, index },) => {
+          return (
+            <TouchableOpacity style={{ height: 50, minWidth: 50, borderRadius: 10, marginRight: 20, padding: 10, backgroundColor: (index + 1) == page ? "silver" : "white", borderWidth: 2, borderColor: (index + 1) == page ? "#444444" : "gray" }} onPress={() => setPage(index + 1)} >
+              <Text style={{ color: "#444444", fontWeight: "bold", fontSize: 20 }} >{index + 1}</Text>
+            </TouchableOpacity>
+          );
+        }}
+      />
+
+      {loading && <Text>Carregando...</Text>}
+
       <FlatList
         data={pokemonData}
         renderItem={({ item }) => <PokemonItem pokemon={item} onPress={handlePokemonPress} />}
         keyExtractor={(item) => item.name}
       />
-      {selectedPokemon && (
+
+      {/* {selectedPokemon && (
         <Modal
           animationType="slide"
           transparent={true}
@@ -117,7 +152,11 @@ const PokemonList = () => {
             </View>
           </View>
         </Modal>
-      )}
+      )} */}
+
+
+
+
     </View>
   );
 };
