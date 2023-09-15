@@ -12,7 +12,7 @@ export default function Form({ navigation }) {
       return;
     }
 
-   
+
     if (email === 'usuario@email.com' && password === 'senha123') {
       navigation.navigate('Pokemons');
     } else {
@@ -22,7 +22,7 @@ export default function Form({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Faça Login</Text>
+      <Text style={styles.header}>Portal de acesso</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -37,7 +37,7 @@ export default function Form({ navigation }) {
         secureTextEntry
       />
       {errorMessage ? <Text style={styles.errorMessage}>{errorMessage}</Text> : null}
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Logar e acessar o pokedex" onPress={handleLogin} />
     </View>
   );
 }
